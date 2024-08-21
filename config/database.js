@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 
 export const connectDB = (uri) => {
-    mongoose.connect(uri, { dbName: "chatApp"})
+    mongoose.connect(uri, { dbName: "todoApp"})
     .then((data) => {
         console.log(`Connected to database: ${data.connection.host}`);
     })

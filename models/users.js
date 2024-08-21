@@ -28,12 +28,12 @@ const userSchema = new mongoose.Schema({
         default: Date.now
     },
 
-    tasks:{
-        titlle: String,
+    tasks:[{
+        title: String,
         description: String,
         completed: Boolean,
         createdAt: Date,
-    },
+    }],
 
     verified: {
         type: Boolean,
@@ -57,7 +57,7 @@ userSchema.pre('save', async function(next){
 
 userSchema.methods.getJWTTOKEN = function(){
     return jwt.sign({ _id: this.id}, process.env.JWT_SECRET, {
-        expiresIn: process.env.JWT_EXPIRE * 24 * 60 * 60 * 1000,
+        expiresIn: process.env.JWT_COOKIE_EXPIRE * 24 * 60 * 60 * 1000,
     })
 }
 

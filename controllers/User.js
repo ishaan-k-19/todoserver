@@ -8,7 +8,8 @@ export const register = async (req, res, next) => {
     try {
         const { name, email, password } = req.body;
 
-        const { avatar } = req.files.avatar.tempFilePath;
+        const  avatar  = req.files.avatar.tempFilePath.toString();
+
 
         let user = await User.findOne({ email });
 
@@ -47,9 +48,11 @@ export const register = async (req, res, next) => {
     }
 };
 
-export const verify = async (res, res, next) => {
+export const verify = async (req, res, next) => {
     try {
-        const otp = Number(res.body, otp);
+        const otp = Number(req.body.otp);
+        
+        console.log(req.user)
 
         const user = await User.findById(req.user._id);
 
@@ -84,7 +87,7 @@ export const login = async (req, res) => {
 
         const user = await User.findOne({ email }).select("+password");
 
-        if (user) {
+        if (!user) {
             return res
                 .status(400)
                 .json({ success: false, message: "Invalid Email or Password" });
@@ -133,11 +136,12 @@ export const removeTask = async (req, res) => {
     }
 };
 
-export const addTask = async () => {
+export const addTask = async (req, res) => {
     try {
         const { title, description } = req.body
 
         const user = await User.findById(req.user._id);
+
 
         user.tasks.push({ title, description, completed: false, createdAt: new Date(Date.now()) });
 
@@ -149,24 +153,27 @@ export const addTask = async () => {
         res.status(500).json({ success: false, message: e.message })
     }
 };
-export const updateTask = async () => {
+export const updateTask = async (req, res) => {
     try {
-        const { taskId } = req.params;
-
-        const user = await User.findById(req.user._id);
-
-        user.tasks = user.tasks.find((task) => task._id.toString() === taskId.toString());
-
-        user.tasks.completed = !user.tasks.completed;
-
-        await user.save();
-
-        res.status(200).json({ success: true, message: "Task Updated successfully" })
-
-    } catch (e) {
-        res.status(500).json({ success: false, message: e.message })
+      const { taskId } = req.params;
+  
+      const user = await User.findById(req.user._id);
+  
+      user.task = user.tasks.find(
+        (task) => task._id.toString() === taskId.toString()
+      );
+  
+      user.task.completed = !user.task.completed;
+  
+      await user.save();
+  
+      res
+        .status(200)
+        .json({ success: true, message: "Task Updated successfully" });
+    } catch (error) {
+      res.status(500).json({ success: false, message: error.message });
     }
-};
+  };
 
 export const getMyProfile = async (req, res) => {
     try {
@@ -186,14 +193,14 @@ export const updateProfile = async (req, res) => {
 
         const { name } = req.body;
 
-        const {avatar} = req.files.avatar.tempFilePath;
+        const avatar = req.files.avatar.tempFilePath;
 
         if (name) user.name = name;
 
         if (avatar) {
 
-            await cloudinary.v2.destroy(user.avatar.public_id);
-
+            await cloudinary.v2.uploader.destroy(user.avatar.public_id);
+            
             const mycloud = await cloudinary.v2.uploader.upload(avatar, {
                 folder: "todoApp"
             })
@@ -221,7 +228,7 @@ export const updatePassword = async (req, res) => {
 
         const { oldPassword, newPassword } = req.body;
 
-        if(!oldPassword || newPassword){
+        if(!oldPassword || !newPassword){
             return res
                .status(400)
                .json({ success: false, message: "Please enter both Old Password and New Password" });
@@ -250,7 +257,7 @@ export const forgetPassword = async (req, res) => {
     try {
         const { email} = req.body;
 
-        const user = await findOne({ email: email });
+        const user = await User.findOne({ email: email });
 
         if (!user) {
             return res
@@ -270,7 +277,7 @@ export const forgetPassword = async (req, res) => {
 
         await sendMail(email, "Request for Reseting Password", message);
 
-        sendToken(res, user, 201, "OTP Sent to your email please verify your account")
+        sendToken(res, 201, "OTP Sent to your email please verify your account")
 
         res.status(200).json({ success: true, message: `OTP sent to ${email}` });
 
@@ -283,7 +290,7 @@ export const resetPassword = async (req, res) => {
     try {
         const { otp, newPassword } = req.body;
 
-        const user = await findOne({ resetPassword: otp, resetPasswordOtp_expiry: {$gt: Date.now()}}).select("+password");
+        const user = await User.findOne({ resetPasswordOtp: otp, resetPasswordOtp_expiry: {$gt: Date.now()}}).select("+password");
 
         if (!user) {
             return res

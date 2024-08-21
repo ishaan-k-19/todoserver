@@ -1,8 +1,8 @@
 import express from 'express';
-import { User } from './models/users.js';
 import cookieParser from 'cookie-parser';
 import fileUpload from 'express-fileupload';
 import cors from 'cors';
+import User from "./routers/User.js";
 
 export const app = express();
 
@@ -17,4 +17,8 @@ app.use(fileUpload({
 app.use(cors());
 
 app.use("/api/v1", User);
+
+app.get("/", (req, res) => {
+    res.send("Server is Working");
+})
 

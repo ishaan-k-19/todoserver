@@ -1,10 +1,10 @@
 import jwt from "jsonwebtoken";
-import { User } from "../models/users";
+import { User } from "../models/users.js";
 
 
 export const isAuthenticated = async (req, res, next) => {
     try{
-        const token = req.cookies;
+        const {token} = req.cookies;
 
         if(!token){
             return res.status(401).json({ success: false, message: "Login First" });
@@ -17,6 +17,6 @@ export const isAuthenticated = async (req, res, next) => {
         next();
 
     } catch(error){
-        res.status(500).json({ success: false, message: "Token invalid" });
+        res.status(500).json({ success: false, message: "Invalid Token" });
     }
 }

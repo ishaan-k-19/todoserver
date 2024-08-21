@@ -1,11 +1,11 @@
-export const sendToken = (req, user, statusCode, message) =>{
+export const sendToken = (res, user, statusCode, message) =>{
 
-    const token = req.getJWTTOKEN();
+    const token = user.getJWTTOKEN();
 
 
     const options ={
-        expires: new Date(Date.now() + process.env.JWT_COOKIE_EXPIRE * 24 * 60 * 60 * 1000),
         httpOnly: true,
+        expires: new Date(Date.now() + process.env.JWT_COOKIE_EXPIRE * 24 * 60 * 60 * 1000),
     }
 
     const userData = {
@@ -18,5 +18,8 @@ export const sendToken = (req, user, statusCode, message) =>{
     }
 
 
-    resizeBy.status(statusCode).cookie("token", token, options).json({ success: true, message, user: userData})
+    res
+    .status(statusCode)
+    .cookie("token", token, options)
+    .json({ success: true, message, user: userData})
 }
